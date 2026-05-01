@@ -1,0 +1,19 @@
+{
+  "categories": {
+    "bottoms": {
+      "label": "Trousers & Jeans",
+      "dimensions": ["waist", "hip", "inseam"],
+      "brands": {}
+    },
+    "shirts": {
+      "label": "Dress Shirts",
+      "dimensions": ["collar", "chest", "sleeve"],
+      "brands": {}
+    },
+    "moto-bottoms": {
+      "label": "Motorcycle Trousers",
+      "dimensions": ["waist", "hip", "inseam"],
+      "brands": {}
+    }
+  }
+}
