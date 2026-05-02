@@ -86,8 +86,10 @@ describe('findClosestSize', () => {
   });
 
   it('returns the closest size when there is no exact match', () => {
-    // waist 83, hip 99, inseam 81 — sits between 32/32 and 34/32, closer to 34/32
-    const result = findClosestSize(data, 'bottoms', { waist: 83, hip: 99, inseam: 81 }, 'levis');
+    // waist 84, hip 100, inseam 81
+    // 32/32 (81,97,81): score = 9+9+0 = 18
+    // 34/32 (86,102,81): score = 4+4+0 = 8  ← closer
+    const result = findClosestSize(data, 'bottoms', { waist: 84, hip: 100, inseam: 81 }, 'levis');
     expect(result.size).toBe('34/32');
   });
 
@@ -144,8 +146,10 @@ describe('convertSize', () => {
     expect(result).not.toBeNull();
     expect(result.size).toBeDefined();
     // Levi's 32/32 = waist 81, hip 97, inseam 81
-    // Dainese 52 = waist 86, hip 100, inseam 83 — closest
-    expect(result.size).toBe('52');
+    // Dainese 44 (74,88,79): score = 49+81+4 = 134
+    // Dainese 48 (80,94,81): score = 1+9+0  = 10  ← closest
+    // Dainese 52 (86,100,83): score = 25+9+4 = 38
+    expect(result.size).toBe('48');
   });
 
   it('converts Seidensticker 39 to the closest TM Lewin shirt size', () => {

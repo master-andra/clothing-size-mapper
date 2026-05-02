@@ -14,8 +14,8 @@
  * @returns {{ [dimension: string]: number } | null}
  */
 export function getSizeFromLabel(data, category, brandKey, sizeLabel) {
-  // TODO: implement
-  return null;
+  const size = data.categories?.[category]?.brands?.[brandKey]?.sizes?.[sizeLabel];
+  return size ?? null;
 }
 
 /**
@@ -34,8 +34,56 @@ export function getSizeFromLabel(data, category, brandKey, sizeLabel) {
  * } | null}
  */
 export function findClosestSize(data, category, measurements, targetBrandKey) {
-  // TODO: implement
-  return null;
+  const cat = data.categories?.[category];
+  if (!cat) return null;
+  const brand = cat.brands?.[targetBrandKey];
+  if (!brand) return null;
+
+  const categoryDimensions = cat.dimensions ?? [];
+
+  let bestLabel = null;
+  let bestScore = Infinity;
+  let bestMeasurements = null;
+
+  for (const [label, targetMeasurements] of Object.entries(brand.sizes)) {
+    const sharedDims = categoryDimensions.filter(
+      d => measurements[d] != null && targetMeasurements[d] != null
+    );
+    if (sharedDims.length === 0) continue;
+
+    const score = sharedDims.reduce((sum, d) => {
+      const diff = measurements[d] - targetMeasurements[d];
+      return sum + diff * diff;
+    }, 0);
+
+    if (score < bestScore) {
+      bestScore = score;
+      bestLabel = label;
+      bestMeasurements = targetMeasurements;
+    }
+  }
+
+  if (!bestLabel) return null;
+
+  const sharedDims = categoryDimensions.filter(
+    d => measurements[d] != null && bestMeasurements[d] != null
+  );
+  const deltas = {};
+  for (const d of sharedDims) {
+    deltas[d] = bestMeasurements[d] - measurements[d];
+  }
+
+  const missingDimensions = categoryDimensions.filter(
+    d => measurements[d] != null && bestMeasurements[d] == null
+  );
+
+  return {
+    size: bestLabel,
+    measurements: bestMeasurements,
+    deltas,
+    score: bestScore,
+    missingDimensions,
+  };
 }
 
 /**
@@ -72,6 +120,44 @@ export function convertSize(data, category, sourceBrandKey, sizeLabel, targetBra
  * } | null}
  */
 export function resolveConversion(data, profile, category, sourceBrand, sourceLabel, targetBrand) {
-  // TODO: implement
-  return null;
+  const sourceMeasurements = getSizeFromLabel(data, category, sourceBrand, sourceLabel);
+  if (!sourceMeasurements) return null;
+
+  const knownSource = profile[category]?.[sourceBrand] != null;
+  const knownTarget = profile[category]?.[targetBrand] != null;
+
+  if (knownSource && knownTarget) {
+    const confirmedTargetLabel = profile[category][targetBrand];
+    const targetMeasurements = getSizeFromLabel(data, category, targetBrand, confirmedTargetLabel);
+    if (!targetMeasurements) return null;
+
+    const categoryDimensions = data.categories[category]?.dimensions ?? [];
+    const sharedDims = categoryDimensions.filter(
+      d => sourceMeasurements[d] != null && targetMeasurements[d] != null
+    );
+    const deltas = {};
+    for (const d of sharedDims) {
+      deltas[d] = targetMeasurements[d] - sourceMeasurements[d];
+    }
+    const missingDimensions = categoryDimensions.filter(
+      d => sourceMeasurements[d] != null && targetMeasurements[d] == null
+    );
+
+    return {
+      mode: 'known-known',
+      size: confirmedTargetLabel,
+      measurements: targetMeasurements,
+      deltas,
+      score: null,
+      missingDimensions,
+    };
+  }
+
+  const algorithmResult = findClosestSize(data, category, sourceMeasurements, targetBrand);
+  if (!algorithmResult) return null;
+
+  return {
+    mode: knownSource ? 'known-unknown' : 'unknown-unknown',
+    ...algorithmResult,
+  };
 }
