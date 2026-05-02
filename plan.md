@@ -19,11 +19,12 @@ Goal: a working personal tool that answers "I have Levi's 32/32 — what Dainese
 - [ ] GitHub repo + Pages enabled
 
 ### 1.2 Data schema + seed data
-- [ ] Finalise sizes.json schema (see docs/architecture.md)
-- [ ] Enter Levi's bottoms data (32/30, 32/32, 32/34, 34/32, 34/34)
-- [ ] Enter Dainese moto pants data
-- [ ] Enter Seidensticker shirts data (collar 38–44)
-- [ ] Enter TM Lewin shirts data
+- [x] Finalise sizes.json schema (see docs/architecture.md)
+- [x] Enter Levi's bottoms data (28–40 waist, 30–34 inseam)
+- [x] Enter Dainese moto pants data (sizes 42–58)
+- [x] Enter Seidensticker shirts data (collar 37–44)
+- [x] Enter TM Lewin shirts data (collar 14.5–17.5, all sleeve lengths)
+- [ ] Verify Seidensticker/TM Lewin chest measurements once measurement type (body vs garment) is confirmed — deferred to v2
 
 ### 1.3 Conversion logic (TDD)
 - [ ] Write tests for: exact match, closest match, between sizes, outside range, missing dimension

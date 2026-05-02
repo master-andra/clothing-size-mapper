@@ -1,19 +1,136 @@
 {
+  "_notes": {
+    "measurements": "All measurements are body measurements in cm (not garment measurements).",
+    "inseam": "Inseam = inner leg from crotch to floor.",
+    "collar": "Collar = neck circumference in cm.",
+    "sleeve_tmlewin": "TM Lewin sleeve is measured from centre-back neck over shoulder to cuff (in inches on label, stored in cm here). Not directly comparable to Seidensticker sleeve, which is shoulder-seam to cuff. Sleeve is therefore excluded from shirt comparisons in v1.",
+    "dainese_ranges": "Dainese publishes measurement ranges per size (e.g. waist 82–86cm for size 48). Midpoint values are stored here. Dainese advises sizing up if between sizes.",
+    "levis_hip": "Levi's publishes hip (seat) per waist size, not per waist+inseam combination. Hip values are therefore the same across all inseam lengths for the same waist.",
+    "sources": {
+      "levis": "https://www.levi.com/DE/en/info/sizechart — retrieved 2026-05",
+      "dainese": "https://hfxmotorsports.com/pages/dainese-sizing-charts-for-men-and-women — retrieved 2026-05",
+      "seidensticker": "https://www.seidensticker.com/eu/en/simple_content/size-tables — retrieved 2026-05",
+      "tmlewin": "https://www.shirtdetective.com/tm-lewin-review/ + https://tmlewin.co.uk/pages/size-guides — retrieved 2026-05"
+    }
+  },
   "categories": {
     "bottoms": {
       "label": "Trousers & Jeans",
       "dimensions": ["waist", "hip", "inseam"],
-      "brands": {}
+      "brands": {
+        "levis": {
+          "name": "Levi's",
+          "notes": "Regular fit (501/505 etc). Label format: waist(in)/inseam(in). Measurements converted to cm from official EU guide. Hip is seat circumference at widest point.",
+          "last_verified": "2026-05",
+          "sizes": {
+            "28/30": { "waist": 71.1, "hip": 87.5, "inseam": 76.2 },
+            "28/32": { "waist": 71.1, "hip": 87.5, "inseam": 81.3 },
+            "28/34": { "waist": 71.1, "hip": 87.5, "inseam": 86.4 },
+            "29/30": { "waist": 73.7, "hip": 90.2, "inseam": 76.2 },
+            "29/32": { "waist": 73.7, "hip": 90.2, "inseam": 81.3 },
+            "29/34": { "waist": 73.7, "hip": 90.2, "inseam": 86.4 },
+            "30/30": { "waist": 76.2, "hip": 92.7, "inseam": 76.2 },
+            "30/32": { "waist": 76.2, "hip": 92.7, "inseam": 81.3 },
+            "30/34": { "waist": 76.2, "hip": 92.7, "inseam": 86.4 },
+            "31/30": { "waist": 78.7, "hip": 95.3, "inseam": 76.2 },
+            "31/32": { "waist": 78.7, "hip": 95.3, "inseam": 81.3 },
+            "31/34": { "waist": 78.7, "hip": 95.3, "inseam": 86.4 },
+            "32/30": { "waist": 81.3, "hip": 97.8, "inseam": 76.2 },
+            "32/32": { "waist": 81.3, "hip": 97.8, "inseam": 81.3 },
+            "32/34": { "waist": 81.3, "hip": 97.8, "inseam": 86.4 },
+            "33/30": { "waist": 83.8, "hip": 100.3, "inseam": 76.2 },
+            "33/32": { "waist": 83.8, "hip": 100.3, "inseam": 81.3 },
+            "33/34": { "waist": 83.8, "hip": 100.3, "inseam": 86.4 },
+            "34/30": { "waist": 86.4, "hip": 103.0, "inseam": 76.2 },
+            "34/32": { "waist": 86.4, "hip": 103.0, "inseam": 81.3 },
+            "34/34": { "waist": 86.4, "hip": 103.0, "inseam": 86.4 },
+            "36/30": { "waist": 91.4, "hip": 108.0, "inseam": 76.2 },
+            "36/32": { "waist": 91.4, "hip": 108.0, "inseam": 81.3 },
+            "36/34": { "waist": 91.4, "hip": 108.0, "inseam": 86.4 },
+            "38/30": { "waist": 96.5, "hip": 113.0, "inseam": 76.2 },
+            "38/32": { "waist": 96.5, "hip": 113.0, "inseam": 81.3 },
+            "38/34": { "waist": 96.5, "hip": 113.0, "inseam": 86.4 },
+            "40/32": { "waist": 101.6, "hip": 118.0, "inseam": 81.3 },
+            "40/34": { "waist": 101.6, "hip": 118.0, "inseam": 86.4 }
+          }
+        }
+      }
     },
     "shirts": {
       "label": "Dress Shirts",
-      "dimensions": ["collar", "chest", "sleeve"],
-      "brands": {}
+      "dimensions": ["collar"],
+      "notes": "v1 uses collar only as the comparison dimension. Collar = neck circumference in cm. Sleeve length is excluded because brands measure it differently (TM Lewin: centre-back to cuff; Seidensticker: shoulder seam to cuff). Add sleeve as a dimension in v2 once measurement alignment is confirmed.",
+      "brands": {
+        "seidensticker": {
+          "name": "Seidensticker",
+          "notes": "European collar sizing. Label IS the collar circumference in cm. Slim Fit assumed. Chest data excluded (garment vs body measurement ambiguous across sources).",
+          "last_verified": "2026-05",
+          "sizes": {
+            "37": { "collar": 37 },
+            "38": { "collar": 38 },
+            "39": { "collar": 39 },
+            "40": { "collar": 40 },
+            "41": { "collar": 41 },
+            "42": { "collar": 42 },
+            "43": { "collar": 43 },
+            "44": { "collar": 44 }
+          }
+        },
+        "tmlewin": {
+          "name": "TM Lewin",
+          "notes": "Label format: collar(in)/sleeve(in). Collar converted to cm (1in = 2.54cm). Sleeve stored for reference but not used in comparison — see category notes. All sleeve lengths for a given collar are listed as separate size entries.",
+          "last_verified": "2026-05",
+          "sizes": {
+            "14.5/32": { "collar": 36.8 },
+            "14.5/33": { "collar": 36.8 },
+            "14.5/34": { "collar": 36.8 },
+            "15/32":   { "collar": 38.1 },
+            "15/33":   { "collar": 38.1 },
+            "15/34":   { "collar": 38.1 },
+            "15/35":   { "collar": 38.1 },
+            "15.5/32": { "collar": 39.4 },
+            "15.5/33": { "collar": 39.4 },
+            "15.5/34": { "collar": 39.4 },
+            "15.5/35": { "collar": 39.4 },
+            "16/32":   { "collar": 40.6 },
+            "16/33":   { "collar": 40.6 },
+            "16/34":   { "collar": 40.6 },
+            "16/35":   { "collar": 40.6 },
+            "16.5/32": { "collar": 41.9 },
+            "16.5/33": { "collar": 41.9 },
+            "16.5/34": { "collar": 41.9 },
+            "16.5/35": { "collar": 41.9 },
+            "17/33":   { "collar": 43.2 },
+            "17/34":   { "collar": 43.2 },
+            "17/35":   { "collar": 43.2 },
+            "17.5/33": { "collar": 44.5 },
+            "17.5/34": { "collar": 44.5 },
+            "17.5/35": { "collar": 44.5 }
+          }
+        }
+      }
     },
     "moto-bottoms": {
       "label": "Motorcycle Trousers",
       "dimensions": ["waist", "hip", "inseam"],
-      "brands": {}
+      "brands": {
+        "dainese": {
+          "name": "Dainese",
+          "notes": "Measurements are body measurements in cm. Dainese publishes ranges per size; midpoints stored here. Dainese advises sizing up if between sizes. Inseam = inner leg from crotch to floor.",
+          "last_verified": "2026-05",
+          "sizes": {
+            "42": { "waist": 72, "hip": 86,  "inseam": 76.5 },
+            "44": { "waist": 76, "hip": 90,  "inseam": 78.0 },
+            "46": { "waist": 80, "hip": 94,  "inseam": 79.5 },
+            "48": { "waist": 84, "hip": 98,  "inseam": 81.0 },
+            "50": { "waist": 88, "hip": 102, "inseam": 82.5 },
+            "52": { "waist": 92, "hip": 106, "inseam": 83.5 },
+            "54": { "waist": 96, "hip": 110, "inseam": 84.5 },
+            "56": { "waist": 100, "hip": 114, "inseam": 85.5 },
+            "58": { "waist": 104, "hip": 118, "inseam": 86.5 }
+          }
+        }
+      }
     }
   }
 }
