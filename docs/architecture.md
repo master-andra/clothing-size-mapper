@@ -3,16 +3,18 @@
 ## System Overview
 
 ```
-sizes.json  ──►  conversion.js  ──►  app.js  ──►  index.html
-(data)           (pure logic)        (DOM)         (UI)
-                      │
-                   tests/
+sizes.json   ──┐
+                ├──►  conversion.js  ──►  app.js  ──►  index.html
+profile.json ──┘     (pure logic)        (DOM)         (UI)
+(personal)               │
+                       tests/
 ```
 
-- `sizes.json` is the single source of truth. All brand + size + measurement data lives here.
-- `conversion.js` is a pure JS module — no DOM, no side effects. Takes data in, returns results. Fully testable.
-- `app.js` handles the browser: reads `sizes.json`, wires up UI events, calls `conversion.js`, renders results.
-- `index.html` is the entry point. No build step — loads files directly.
+- `sizes.json` — brand size chart data. Objective, shared across all users.
+- `profile.json` — the user's confirmed sizes per brand/category. Personal calibration layer.
+- `conversion.js` — pure JS module, no DOM, no side effects. Fully testable.
+- `app.js` — browser glue: loads both JSON files, wires UI events, renders results.
+- `index.html` — entry point. No build step.
 
 ---
 
@@ -87,9 +89,54 @@ Organised by category first. This prevents meaningless cross-category comparison
 
 ---
 
+## Personal Profile (`data/profile.json`)
+
+Stores the user's confirmed sizes — sizes they actually own and know fit well. This is more reliable than the algorithmic match because it's ground truth.
+
+```json
+{
+  "bottoms": {
+    "levis": "32/32",
+    "dainese": "50"
+  },
+  "shirts": {
+    "seidensticker": "39",
+    "tmlewin": "15.5/33"
+  },
+  "moto-bottoms": {
+    "dainese": "50"
+  }
+}
+```
+
+Profile is edited manually in v1 (or via a UI toggle). Not synced to any server — lives in the repo alongside `sizes.json`.
+
+---
+
 ## Conversion Algorithm
 
 Implemented in `app/conversion.js`.
+
+### Three conversion modes
+
+`resolveConversion(data, profile, category, sourceBrand, sourceLabel, targetBrand)`
+
+**Mode 1 — known → known** (most reliable):
+Both brands have a confirmed size in `profile.json`.
+- Derive measurements from both confirmed sizes
+- Return direct comparison with deltas
+- Label result as "based on your confirmed sizes"
+
+**Mode 2 — known → unknown**:
+Source brand has a confirmed size in `profile.json`, target does not.
+- Derive measurements from confirmed source size
+- Run algorithm to find closest target size
+- Label result as "based on your confirmed [brand] size, algorithm for [target]"
+
+**Mode 3 — unknown → unknown**:
+Neither brand in profile.
+- Pure algorithm from size charts
+- Label result as "based on size charts only — verify before buying"
 
 ### Step 1: Source size → body measurements
 
@@ -118,7 +165,7 @@ Shared dimensions only: if source has `{ waist, hip, inseam }` and target only p
 
 ### Step 3: UI renders result + deltas
 
-Show the recommended size and a table of each measurement: source value, target value, delta (±cm). User can judge from the delta whether to size up or down.
+Show the recommended size, the mode (confirmed / partial / algorithm), and a table of each measurement: source value, target value, delta (±cm). User can judge from the delta whether to size up or down.
 
 ---
 

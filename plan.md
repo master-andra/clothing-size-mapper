@@ -28,8 +28,10 @@ Goal: a working personal tool that answers "I have Levi's 32/32 — what Dainese
 
 ### 1.3 Conversion logic (TDD)
 - [ ] Write tests for: exact match, closest match, between sizes, outside range, missing dimension
+- [ ] Write tests for personal profile: known→known, known→unknown, unknown→unknown modes
 - [ ] Implement `getSizeFromLabel(brand, category, label)` → measurements
 - [ ] Implement `findClosestSize(measurements, targetBrand, category)` → { size, deltas }
+- [ ] Implement `resolveConversion(data, profile, category, sourceBrand, sourceLabel, targetBrand)` → { mode, result }
 - [ ] All tests passing
 
 ### 1.4 Web app UI
@@ -37,6 +39,8 @@ Goal: a working personal tool that answers "I have Levi's 32/32 — what Dainese
 - [ ] Source brand + size picker
 - [ ] Target brand picker
 - [ ] Results: recommended size + measurement table with deltas
+- [ ] "My sizes" section: mark a size as confirmed, stored in profile.json
+- [ ] Visual indicator when result is based on confirmed personal sizes vs algorithm
 - [ ] Mobile-friendly layout
 
 ### 1.5 Deploy

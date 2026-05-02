@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getSizeFromLabel, findClosestSize, convertSize } from '../app/conversion.js';
+import { getSizeFromLabel, findClosestSize, convertSize, resolveConversion } from '../app/conversion.js';
 
 // Minimal test fixture — mirrors the real sizes.json schema
 const data = {
@@ -158,5 +158,54 @@ describe('convertSize', () => {
 
   it('returns null when source size label does not exist', () => {
     expect(convertSize(data, 'bottoms', 'levis', '99/99', 'dainese')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveConversion — three modes
+// ---------------------------------------------------------------------------
+
+describe('resolveConversion', () => {
+  const profileBothKnown = {
+    bottoms: { levis: '32/32', dainese: '52' },
+  };
+
+  const profileSourceOnly = {
+    bottoms: { levis: '32/32' },
+  };
+
+  const profileEmpty = {
+    bottoms: {},
+  };
+
+  it('mode: known→known — returns direct comparison without running algorithm', () => {
+    const result = resolveConversion(data, profileBothKnown, 'bottoms', 'levis', '32/32', 'dainese');
+    expect(result.mode).toBe('known-known');
+    expect(result.size).toBe('52');
+    // deltas should be between levis 32/32 measurements and dainese 52 measurements
+    expect(result.deltas).toBeDefined();
+  });
+
+  it('mode: known→known — uses confirmed sizes even if algorithm would pick differently', () => {
+    // Profile says dainese 52 is confirmed, even if the algorithm might recommend 50
+    const result = resolveConversion(data, profileBothKnown, 'bottoms', 'levis', '32/32', 'dainese');
+    expect(result.mode).toBe('known-known');
+    expect(result.size).toBe('52'); // profile wins over algorithm
+  });
+
+  it('mode: known→unknown — runs algorithm anchored to confirmed source measurements', () => {
+    const result = resolveConversion(data, profileSourceOnly, 'bottoms', 'levis', '32/32', 'dainese');
+    expect(result.mode).toBe('known-unknown');
+    expect(result.size).toBeDefined();
+  });
+
+  it('mode: unknown→unknown — runs pure algorithm from size charts', () => {
+    const result = resolveConversion(data, profileEmpty, 'bottoms', 'levis', '32/32', 'dainese');
+    expect(result.mode).toBe('unknown-unknown');
+    expect(result.size).toBeDefined();
+  });
+
+  it('returns null if source size label does not exist in chart', () => {
+    expect(resolveConversion(data, profileEmpty, 'bottoms', 'levis', '99/99', 'dainese')).toBeNull();
   });
 });

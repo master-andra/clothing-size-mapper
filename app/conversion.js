@@ -48,3 +48,30 @@ export function convertSize(data, category, sourceBrandKey, sizeLabel, targetBra
   if (!measurements) return null;
   return findClosestSize(data, category, measurements, targetBrandKey);
 }
+
+/**
+ * Full conversion with personal profile awareness.
+ *
+ * Mode "known-known":    both brands have confirmed sizes in profile → direct comparison
+ * Mode "known-unknown":  source brand confirmed in profile → algorithm for target
+ * Mode "unknown-unknown": neither in profile → pure algorithm
+ *
+ * @param {object} data        - Full sizes.json content
+ * @param {object} profile     - Full profile.json content
+ * @param {string} category    - e.g. "bottoms"
+ * @param {string} sourceBrand - e.g. "levis"
+ * @param {string} sourceLabel - e.g. "32/32"
+ * @param {string} targetBrand - e.g. "dainese"
+ * @returns {{
+ *   mode: "known-known" | "known-unknown" | "unknown-unknown",
+ *   size: string,
+ *   measurements: object,
+ *   deltas: object,
+ *   score: number | null,
+ *   missingDimensions: string[]
+ * } | null}
+ */
+export function resolveConversion(data, profile, category, sourceBrand, sourceLabel, targetBrand) {
+  // TODO: implement
+  return null;
+}
