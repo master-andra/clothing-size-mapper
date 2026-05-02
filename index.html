@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Size Mapper</title>
+  <link rel="stylesheet" href="app/style.css">
+</head>
+<body>
+
+  <header>
+    <h1>Size Mapper</h1>
+    <p class="subtitle">Cross-brand clothing size conversion</p>
+  </header>
+
+  <main>
+
+    <!-- Converter -->
+    <section class="card" id="converter">
+
+      <div class="field">
+        <label for="category">Category</label>
+        <select id="category">
+          <option value="" disabled selected>Select a category</option>
+        </select>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="source-brand">I have</label>
+          <select id="source-brand" disabled>
+            <option value="" disabled selected>Brand</option>
+          </select>
+        </div>
+        <div class="field field-size">
+          <label for="source-size">Size</label>
+          <select id="source-size" disabled>
+            <option value="" disabled selected>Size</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="target-brand">Find my size in</label>
+        <select id="target-brand" disabled>
+          <option value="" disabled selected>Brand</option>
+        </select>
+      </div>
+
+      <button id="convert-btn" disabled>Convert</button>
+
+    </section>
+
+    <!-- Result -->
+    <section class="card" id="result" hidden>
+    </section>
+
+    <!-- My confirmed sizes -->
+    <section class="card" id="profile-section">
+      <div class="profile-header" id="profile-toggle" role="button" tabindex="0">
+        <span>My confirmed sizes</span>
+        <span class="toggle-icon">›</span>
+      </div>
+      <div id="profile-body" hidden>
+        <p class="profile-hint">Mark sizes you own and know fit well. These take priority over size chart estimates.</p>
+        <div id="profile-brands"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <script type="module" src="app/app.js"></script>
+</body>
+</html>
