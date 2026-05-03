@@ -1,6 +1,6 @@
 # Plan
 
-## Status: Phase 1 — nearly complete (step 1.5 remaining)
+## Status: Phase 1 — complete except 1.5 (iPhone test) and 1.6 (schema migration)
 
 ---
 
@@ -24,7 +24,7 @@ Goal: a working personal tool that answers "I have Levi's 32/32 — what Dainese
 - [x] Enter Dainese moto pants data (sizes 42–58)
 - [x] Enter Seidensticker shirts data (collar 37–44)
 - [x] Enter TM Lewin shirts data (collar 14.5–17.5, all sleeve lengths)
-- [ ] Verify Seidensticker/TM Lewin chest measurements once measurement type (body vs garment) is confirmed — deferred to v2
+- [ ] Chest measurement normalization (body vs garment ambiguity) — deferred to 1.6
 
 ### 1.3 Conversion logic (TDD)
 - [x] Write tests for: exact match, closest match, between sizes, outside range, missing dimension
@@ -44,9 +44,40 @@ Goal: a working personal tool that answers "I have Levi's 32/32 — what Dainese
 - [x] Mobile-friendly layout
 
 ### 1.5 Deploy
-- [ ] Push to GitHub
-- [ ] Enable GitHub Pages
+- [x] Push to GitHub
+- [x] Enable GitHub Pages + CI/CD (tests gate deployment)
 - [ ] Test on iPhone (Safari + Add to Home Screen)
+
+### 1.6 Schema migration — dimension-first architecture
+
+**Why**: the current schema nests brands inside categories, creating silos. Brands
+can't be compared across categories without data duplication. At thousands of brands
+this breaks down. The fix must happen before significant brand expansion.
+
+**Two structural problems to fix:**
+
+1. **Category silos → brand duplication**
+   Currently Levi's lives in `bottoms` and had to be duplicated into `moto-bottoms`.
+   Target: brands are top-level and declare which categories they appear in.
+   No duplication — the same size data is referenced from multiple category contexts.
+
+2. **Measurement normalization debt → algorithm hacks**
+   Some brands publish garment measurements or use non-standard methods (e.g. TM Lewin
+   sleeve from centre-back). These need to be converted to the standard body measurement
+   once at data entry, not handled algorithmically at query time. After normalization,
+   sleeve becomes a usable comparison dimension for shirts automatically — no special
+   casing needed.
+
+**See `docs/architecture.md` for the full target schema.**
+
+**Implementation tasks:**
+- [ ] Migrate `data/sizes.json` to brand-first schema (brands top-level, categories as tags)
+- [ ] Normalize TM Lewin sleeve data to shoulder-seam standard (verify offset, apply at entry)
+- [ ] Remove duplicated Levi's entry from `moto-bottoms` (no longer needed)
+- [ ] Update `conversion.js` to work with brand-first schema
+- [ ] Update `app.js` UI to use brand-first schema (category filter → shows brands tagged with that category)
+- [ ] Update all tests
+- [ ] Re-enable `sleeve` as a comparison dimension for shirts
 
 ---
 

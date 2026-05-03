@@ -11,105 +11,109 @@ profile.json ──┘     (pure logic)        (DOM)         (UI)
 ```
 
 - `sizes.json` — brand size chart data. Objective, shared across all users.
-- `profile.json` — the user's confirmed sizes per brand/category. Personal calibration layer.
+- `profile.json` — template only; runtime profile lives in `localStorage`.
 - `conversion.js` — pure JS module, no DOM, no side effects. Fully testable.
-- `app.js` — browser glue: loads both JSON files, wires UI events, renders results.
+- `app.js` — browser glue: loads JSON, wires UI events, renders results.
 - `index.html` — entry point. No build step.
 
 ---
 
-## Data Schema (`data/sizes.json`)
+## Core Design Principle
 
-Organised by category first. This prevents meaningless cross-category comparisons (shirt collar ≠ trouser waist).
+**Body measurements (cm) are the single universal translation layer.**
+
+Every size in every brand maps to body measurements. The algorithm then finds the closest body-measurement match in the target brand. This means:
+
+- No pairwise brand mappings. Adding brand #1000 requires no changes to existing data.
+- No measurement-method hacks at query time. If a brand measures differently, convert once at data entry and store the body measurement. The algorithm never needs to know how it was derived.
+- Cross-brand conversion is automatic for any two brands that share at least one comparable body dimension.
+
+**Rule**: everything stored in `sizes.json` must be a body measurement in cm. If a brand publishes garment measurements or uses a non-standard method (e.g. sleeve from centre-back instead of shoulder seam), convert to the standard body measurement at data entry and document it in `notes`.
+
+---
+
+## Data Schema — Target Architecture
+
+The current schema organises brands inside categories. This creates silos: brands locked into one category cannot be compared across categories. At scale (thousands of brands), this is unmaintainable — every reference brand would need to be duplicated into every relevant category.
+
+**Target schema**: brands are top-level. They declare which dimensions they publish. Comparison is based on shared dimensions between any two brands — not on category membership.
 
 ```json
 {
+  "dimensions": {
+    "waist":  { "description": "Body circumference at natural waist, cm" },
+    "hip":    { "description": "Body circumference at fullest point of seat, cm" },
+    "inseam": { "description": "Inner leg, crotch to floor, cm" },
+    "collar": { "description": "Neck circumference, cm" },
+    "chest":  { "description": "Body circumference at fullest point of chest, cm" },
+    "sleeve": { "description": "Shoulder seam to wrist, cm — standard body measurement" }
+  },
   "categories": {
-    "bottoms": {
-      "label": "Trousers & Jeans",
-      "dimensions": ["waist", "hip", "inseam"],
-      "brands": {
-        "levis": {
-          "name": "Levi's",
-          "source": "https://www.levi.com/GB/en_GB/size-guide",
-          "last_verified": "2026-05",
-          "notes": "Waist and inseam in inches on label, converted to cm here. Regular fit.",
-          "sizes": {
-            "30/30": { "waist": 76, "hip": 93, "inseam": 76 },
-            "32/30": { "waist": 81, "hip": 97, "inseam": 76 },
-            "32/32": { "waist": 81, "hip": 97, "inseam": 81 }
-          }
-        }
+    "bottoms":      { "label": "Trousers & Jeans",      "dimensions": ["waist", "hip", "inseam"] },
+    "shirts":       { "label": "Dress Shirts",           "dimensions": ["collar", "chest", "sleeve"] },
+    "moto-bottoms": { "label": "Motorcycle Trousers",    "dimensions": ["waist", "hip", "inseam"] }
+  },
+  "brands": {
+    "levis": {
+      "name": "Levi's",
+      "categories": ["bottoms", "moto-bottoms"],
+      "last_verified": "2026-05",
+      "source": "https://www.levi.com/DE/en/info/sizechart",
+      "notes": "Regular fit. Label format: waist(in)/inseam(in), converted to cm.",
+      "sizes": {
+        "32/32": { "waist": 81.3, "hip": 97.8, "inseam": 81.3 }
       }
     },
-    "shirts": {
-      "label": "Dress Shirts",
-      "dimensions": ["collar", "chest", "sleeve"],
-      "brands": {
-        "seidensticker": {
-          "name": "Seidensticker",
-          "source": "https://www.seidensticker.com/eu/en/simple_content/size-tables",
-          "last_verified": "2026-05",
-          "notes": "Collar is neck circumference in cm.",
-          "sizes": {
-            "38": { "collar": 38, "chest": 96, "sleeve": 62 },
-            "39": { "collar": 39, "chest": 98, "sleeve": 63 }
-          }
-        }
+    "dainese": {
+      "name": "Dainese",
+      "categories": ["moto-bottoms"],
+      "last_verified": "2026-05",
+      "source": "https://hfxmotorsports.com/pages/dainese-sizing-charts",
+      "notes": "Ranges published per size; midpoints stored. Size up if between sizes.",
+      "sizes": {
+        "48": { "waist": 84, "hip": 98, "inseam": 81.0 }
       }
     },
-    "moto-bottoms": {
-      "label": "Motorcycle Trousers",
-      "dimensions": ["waist", "hip", "inseam"],
-      "brands": {
-        "dainese": {
-          "name": "Dainese",
-          "source": "https://www.dainese.com/us/en/sports/motorbike/size-guide.html",
-          "last_verified": "2026-05",
-          "notes": "Dainese sizes map directly to body measurements. Size up if between measurements.",
-          "sizes": {
-            "44": { "waist": 74, "hip": 88, "inseam": 79 },
-            "46": { "waist": 76, "hip": 90, "inseam": 80 },
-            "48": { "waist": 80, "hip": 94, "inseam": 81 }
-          }
-        }
+    "seidensticker": {
+      "name": "Seidensticker",
+      "categories": ["shirts"],
+      "last_verified": "2026-05",
+      "source": "https://www.seidensticker.com/eu/en/simple_content/size-tables",
+      "notes": "Slim fit. Sleeve = shoulder seam to cuff (standard body measurement).",
+      "sizes": {
+        "39": { "collar": 39, "sleeve": 63 }
+      }
+    },
+    "tmlewin": {
+      "name": "TM Lewin",
+      "categories": ["shirts"],
+      "last_verified": "2026-05",
+      "source": "https://tmlewin.co.uk/pages/size-guides",
+      "notes": "Label: collar(in)/sleeve(in). Collar converted to cm. Sleeve published as centre-back to cuff — subtract ~19cm shoulder span to get standard shoulder-seam measurement before storing.",
+      "sizes": {
+        "15.5/33": { "collar": 39.4, "sleeve": 65 }
       }
     }
   }
 }
 ```
 
-**Schema rules:**
-- All measurements in cm (integers).
-- `dimensions` on the category defines which keys are expected in each size object.
-- `source` is the URL of the official size guide used.
-- `last_verified` is YYYY-MM. Flags when data may be stale.
-- `notes` captures anything non-obvious about how a brand measures (e.g. "low-rise, waist measured at hip").
-- Size labels are strings, exactly as printed on the garment.
+Key differences from current schema:
+1. `brands` is top-level. No brand duplication across categories.
+2. A brand declares `"categories": [...]` — this controls which UI groups it appears in.
+3. `dimensions` is a top-level glossary defining the canonical body measurement for each key.
+4. Measurement normalization happens at data entry; the algorithm is dimension-agnostic.
 
 ---
 
-## Personal Profile (`data/profile.json`)
+## Current Schema (v1 — in use)
 
-Stores the user's confirmed sizes — sizes they actually own and know fit well. This is more reliable than the algorithmic match because it's ground truth.
+The current schema has brands nested inside categories. It works for the initial brand set but has two known limitations:
 
-```json
-{
-  "bottoms": {
-    "levis": "32/32",
-    "dainese": "50"
-  },
-  "shirts": {
-    "seidensticker": "39",
-    "tmlewin": "15.5/33"
-  },
-  "moto-bottoms": {
-    "dainese": "50"
-  }
-}
-```
+1. **Brand duplication**: a brand that belongs to multiple categories must have its data duplicated (e.g. Levi's currently exists in both `bottoms` and `moto-bottoms`).
+2. **Measurement normalization debt**: some brands' sleeve measurements have not yet been normalized to the standard body measurement. These need converting at data entry before sleeve can be used as a comparison dimension.
 
-Profile is edited manually in v1 (or via a UI toggle). Not synced to any server — lives in the repo alongside `sizes.json`.
+Migration to the target schema is planned before significant brand expansion (see plan.md step 1.6).
 
 ---
 
@@ -122,27 +126,19 @@ Implemented in `app/conversion.js`.
 `resolveConversion(data, profile, category, sourceBrand, sourceLabel, targetBrand)`
 
 **Mode 1 — known → known** (most reliable):
-Both brands have a confirmed size in `profile.json`.
-- Derive measurements from both confirmed sizes
-- Return direct comparison with deltas
-- Label result as "based on your confirmed sizes"
+Both brands have a confirmed size in the profile. Returns direct comparison with deltas. Labelled "based on your confirmed sizes."
 
 **Mode 2 — known → unknown**:
-Source brand has a confirmed size in `profile.json`, target does not.
-- Derive measurements from confirmed source size
-- Run algorithm to find closest target size
-- Label result as "based on your confirmed [brand] size, algorithm for [target]"
+Source brand confirmed in profile, target is not. Derives measurements from confirmed source, runs algorithm for target.
 
 **Mode 3 — unknown → unknown**:
-Neither brand in profile.
-- Pure algorithm from size charts
-- Label result as "based on size charts only — verify before buying"
+Pure algorithm from size charts. Labelled "based on size charts only — verify before buying."
 
 ### Step 1: Source size → body measurements
 
 ```
 getSizeFromLabel(data, category, brandKey, sizeLabel)
-  → { waist: 81, hip: 97, inseam: 81 }  |  null if not found
+  → { waist: 81, hip: 97, inseam: 81 }  |  null
 ```
 
 ### Step 2: Body measurements → closest target size
@@ -151,21 +147,23 @@ getSizeFromLabel(data, category, brandKey, sizeLabel)
 findClosestSize(data, category, measurements, targetBrandKey)
   → {
       size: "50",
-      measurements: { waist: 80, hip: 94, inseam: 81 },
+      ties: ["50"],          // all size labels at the same score (e.g. same collar, multiple sleeves)
+      measurements: { ... },
       deltas: { waist: +1, hip: +3, inseam: 0 },
-      score: number   // sum of squared differences, lower = closer
+      score: number,
+      missingDimensions: []  // dimensions source has but target doesn't publish
     }
-  | null if brand/category not found
+  | null
 ```
 
-Distance formula: Euclidean over shared dimensions only.
-`score = Σ (sourceMeasurement[d] - targetMeasurement[d])²` for each dimension `d`.
+Distance: Euclidean over shared dimensions only.
+`score = Σ (source[d] - target[d])²`
 
-Shared dimensions only: if source has `{ waist, hip, inseam }` and target only publishes `{ waist, hip }`, compute distance over `{ waist, hip }` and note the missing dimension in the result.
+Ties (same score) are returned together — e.g. when a brand has identical measurements across sleeve-length variants. The UI surfaces all tied options so the user can choose.
 
 ### Step 3: UI renders result + deltas
 
-Show the recommended size, the mode (confirmed / partial / algorithm), and a table of each measurement: source value, target value, delta (±cm). User can judge from the delta whether to size up or down.
+Recommended size, mode badge, measurement table with delta colour coding, sleeve variant options if ties exist.
 
 ---
 
@@ -173,22 +171,28 @@ Show the recommended size, the mode (confirmed / partial / algorithm), and a tab
 
 ```
 clothing_size_mapper/
-├── CLAUDE.md               # Claude Code instructions (concise, links here)
+├── CLAUDE.md               # Claude Code instructions
 ├── plan.md                 # Phased work plan + current status
-├── package.json            # Vitest test runner
+├── package.json
 ├── .gitignore
+├── manifest.json           # PWA manifest
+├── index.html              # App entry point
+├── icons/
+│   └── icon.svg
 ├── docs/
 │   ├── architecture.md     # This file
-│   ├── decisions.md        # Why decisions were made
-│   └── research.md         # Competitive landscape
+│   ├── decisions.md
+│   ├── research.md
+│   ├── monitoring.md       # Analytics setup + traction gate
+│   └── idea-validations/
+│       └── cross-brand-clothing-size-converter.md
 ├── data/
-│   └── sizes.json          # All brand size data
+│   ├── sizes.json          # Brand size data
+│   └── profile.json        # Schema template (runtime profile in localStorage)
 ├── app/
-│   ├── index.html          # Entry point
 │   ├── conversion.js       # Pure conversion logic (ES module)
 │   ├── app.js              # DOM + UI logic
-│   └── style.css           # Styles
-├── tests/
-│   └── conversion.test.js  # Vitest unit tests
-└── scrapers/               # Deferred — future brand data ingestion
+│   └── style.css
+└── tests/
+    └── conversion.test.js
 ```
