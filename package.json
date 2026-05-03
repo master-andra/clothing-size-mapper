@@ -1,6 +1,8 @@
 {
   "name": "clothing-size-mapper",
   "version": "0.1.0",
+  "description": "Cross-brand clothing size converter using body measurements as the universal translation layer",
+  "homepage": "https://master-andra.github.io/clothing-size-mapper/",
   "type": "module",
   "scripts": {
     "test": "vitest run",

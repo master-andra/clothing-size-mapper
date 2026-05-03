@@ -233,6 +233,9 @@ async function init() {
       return;
     }
     renderResult(result, data, cat, srcBrand, srcSize);
+    if (typeof umami !== 'undefined') {
+      umami.track('conversion', { category: cat, source: srcBrand, target: tgtBrand, mode: result.mode });
+    }
   });
 
   // Profile toggle
