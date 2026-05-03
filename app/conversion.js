@@ -77,8 +77,24 @@ export function findClosestSize(data, category, measurements, targetBrandKey) {
     d => measurements[d] != null && bestMeasurements[d] == null
   );
 
+  // Collect all size labels that share the same best score (ties).
+  // Ties occur when a brand has variants (e.g. same collar, multiple sleeve lengths)
+  // that are indistinguishable on the compared dimensions.
+  const ties = Object.entries(brand.sizes)
+    .filter(([, m]) => {
+      const shared = categoryDimensions.filter(d => measurements[d] != null && m[d] != null);
+      if (shared.length === 0) return false;
+      const score = shared.reduce((sum, d) => {
+        const diff = measurements[d] - m[d];
+        return sum + diff * diff;
+      }, 0);
+      return score === bestScore;
+    })
+    .map(([label]) => label);
+
   return {
     size: bestLabel,
+    ties,
     measurements: bestMeasurements,
     deltas,
     score: bestScore,

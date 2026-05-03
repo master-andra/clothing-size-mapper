@@ -97,6 +97,11 @@ function renderResult(result, data, category, sourceBrand, sourceLabel) {
     ? `<p class="missing-note">Some dimensions not published by this brand — check fit carefully.</p>`
     : '';
 
+  const hasTies = result.ties?.length > 1;
+  const tiesNote = hasTies
+    ? `<p class="ties-note">Sleeve length cannot be converted — brands measure it differently. Available options for this collar: <strong>${result.ties.join(', ')}</strong></p>`
+    : '';
+
   section.innerHTML = `
     <div class="result-size">${result.size}</div>
     <span class="mode-badge ${mode.cls}">${mode.text}</span>
@@ -104,6 +109,7 @@ function renderResult(result, data, category, sourceBrand, sourceLabel) {
       <thead><tr><th>Dimension</th><th>You</th><th>Target</th><th>Δ</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
+    ${tiesNote}
     ${missingNote}
   `;
   section.hidden = false;

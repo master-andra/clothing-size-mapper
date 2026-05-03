@@ -185,6 +185,15 @@ button:disabled { background: #ccc; cursor: not-allowed; }
 .delta-ok    { color: #d97706; font-weight: 600; }
 .delta-far   { color: #dc2626; font-weight: 600; }
 
+.ties-note {
+  font-size: 0.8rem;
+  color: #1d4ed8;
+  background: #dbeafe;
+  border-radius: 6px;
+  padding: 0.5rem 0.65rem;
+  margin-top: 0.75rem;
+}
+
 .missing-note {
   font-size: 0.8rem;
   color: #d97706;

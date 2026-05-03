@@ -28,22 +28,24 @@ const data = {
     },
     shirts: {
       label: 'Dress Shirts',
-      dimensions: ['collar', 'chest', 'sleeve'],
+      dimensions: ['collar'],
       brands: {
         seidensticker: {
           name: 'Seidensticker',
           sizes: {
-            '38': { collar: 38, chest: 96, sleeve: 62 },
-            '39': { collar: 39, chest: 98, sleeve: 63 },
-            '40': { collar: 40, chest: 100, sleeve: 64 },
+            '38': { collar: 38 },
+            '39': { collar: 39 },
+            '40': { collar: 40 },
           },
         },
         tmlewin: {
           name: 'TM Lewin',
           sizes: {
-            '15/33': { collar: 38, chest: 97, sleeve: 84 },
-            '15.5/33': { collar: 39, chest: 99, sleeve: 84 },
-            '16/33': { collar: 41, chest: 102, sleeve: 84 },
+            '15/33':   { collar: 38.1 },
+            '15.5/32': { collar: 39.4 },
+            '15.5/33': { collar: 39.4 },
+            '15.5/34': { collar: 39.4 },
+            '16/33':   { collar: 40.6 },
           },
         },
       },
@@ -155,9 +157,19 @@ describe('convertSize', () => {
   it('converts Seidensticker 39 to the closest TM Lewin shirt size', () => {
     const result = convertSize(data, 'shirts', 'seidensticker', '39', 'tmlewin');
     expect(result).not.toBeNull();
-    // Seidensticker 39 = collar 39, chest 98, sleeve 63
-    // TM Lewin 15.5/33 = collar 39 — should be exact collar match
-    expect(result.size).toBe('15.5/33');
+    // Seidensticker 39 = collar 39 → closest TM Lewin collar is 39.4 (15.5/*)
+    // ties should include all sleeve variants for that collar
+    expect(result.ties).toContain('15.5/32');
+    expect(result.ties).toContain('15.5/33');
+    expect(result.ties).toContain('15.5/34');
+  });
+
+  it('returns ties when multiple sizes score equally on compared dimensions', () => {
+    // All TM Lewin 15.5/* entries have identical collar — all should be tied
+    const result = convertSize(data, 'shirts', 'seidensticker', '39', 'tmlewin');
+    expect(result.ties.length).toBeGreaterThan(1);
+    // All ties should share the same collar prefix
+    expect(result.ties.every(s => s.startsWith('15.5/'))).toBe(true);
   });
 
   it('returns null when source size label does not exist', () => {
